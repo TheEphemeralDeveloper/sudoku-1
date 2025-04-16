@@ -1,0 +1,151 @@
+/*
+ Improve styles for the .selector and .numcard
+Add styles for timer, modal, reset button
+Improve background and gameboard
+**/
+:root {
+  font-size: 24px;
+  color: #a9b9f9;
+  --background: #391f5c;
+}
+
+.main,
+.gameboard {
+  background-color: var(--background);
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  margin: auto;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  top: -25vh;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.gameboard {
+  display: grid;
+  top: -10vh;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  gap: 1px;
+  align-content: center;
+  grid-template-columns: repeat(9, 8vh);
+  grid-template-rows: repeat(9, 8vh);
+}
+
+.difficulty:not(:last-child) {
+  margin-bottom: 0.2rem;
+}
+
+.difficulty {
+  background-image: linear-gradient(-180deg, #00d775, #00bd68);
+  border-radius: 5px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0 2px 4px;
+  color: #fff;
+  cursor: pointer;
+  height: 1.25rem;
+  outline: 0;
+  overflow: hidden;
+  padding: 0 20px;
+  pointer-events: auto;
+  position: relative;
+  text-align: center;
+  width: auto;
+  z-index: 9;
+  border: 0;
+  transition: filter ease;
+}
+
+.selector {
+  position: absolute;
+  bottom: 0vh;
+  left: 0;
+  right: 0;
+  margin: auto;
+  height: 12vh;
+  width: calc(9vh * 9);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.selector > .number-card {
+  background-color: #1f235b;
+  border: 1px solid #000;
+  border-radius: 2px;
+  height: 10vh;
+  width: 8vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.counter {
+  align-self: flex-end;
+  margin: 0;
+  font-size: 0.7rem;
+}
+
+.difficulty:hover {
+  filter: hue-rotate(15deg) brightness(90%);
+  border: 1px solid #ffd700;
+}
+
+.hide {
+  display: none;
+}
+
+.cell {
+  background-color: #1f235b;
+  height: 100%;
+  width: 100%;
+  border: 1px solid #000;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+}
+
+.cell:nth-child(3n):not(:nth-child(9n)) {
+  border-right: 3px solid black;
+}
+
+.cell:nth-child(3n + 1):not(:nth-child(9n + 1)) {
+  border-left: none;
+}
+
+.bottom {
+  border-bottom: 3px solid black;
+}
+
+.top {
+  border-top: none;
+}
+
+.num-input {
+  background-color: #404781;
+  border: none;
+  height: calc(100% - 3px);
+  width: calc(100% - 3px);
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.num-input:focus {
+  caret-color: transparent;
+}
+
+.cell:focus {
+  background-color: #ffd700;
+}
+
+.invalid {
+  border-color: red;
+}
