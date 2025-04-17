@@ -1,9 +1,3 @@
-/* Add selectors for timer reset button and modal
-    Add timer functionality in MM:SS format
-    Add a showModal function;
-    Add a resetGame function;
-**/
-
 const main = document.getElementById("main");
 const gameboard = document.getElementById("gameboard");
 const selector = document.querySelector(".selector");
@@ -11,6 +5,22 @@ const easy = document.getElementById("easy");
 const medium = document.getElementById("medium");
 const hard = document.getElementById("hard");
 const expert = document.getElementById("expert");
+const timer = document.getElementById("timer");
+const modal = document.getElementById("modal");
+const result = document.getElementById("result");
+const totalTime = document.getElementById("modal-time");
+const totalErrors = document.getElementById("modal-errors");
+const overlay = document.querySelector(".overlay");
+const backToMenuBtn = document.getElementById("back-to-menu");
+const playAgainBtn = document.getElementById("play-again");
+
+let seconds = 0;
+let minutes = 0;
+let timerRunning = null;
+
+let mistakes = 0;
+let numberOfClues = 0;
+let resetDifficulty = "";
 
 const inputRegex = /^[1-9]?$/;
 
@@ -95,10 +105,6 @@ function handleInput(index, value) {
   const box = getBox(row, col);
   const counter = document.getElementById(`counter-${value}`);
 
-  if (![...dataCells].some((div) => div.children.length > 0)) {
-    //Add a Show Modal, to show reset game, # of errors and game length
-  }
-
   if (validInput(index, value)) {
     document.getElementById(`input-${index}`).remove();
     dataCells[index].textContent = value;
@@ -109,11 +115,66 @@ function handleInput(index, value) {
     counter.textContent = Number(counter.textContent) - 1;
     if (Number(counter.textContent) === 0) {
       const card = document.getElementById(`card-${value}`);
-      selector.removeChild(card);
+      card.style.display = "none";
     }
+
+    if (![...dataCells].some((div) => div.textContent === "")) {
+      showModal();
+    }
+
     return;
+  } else if (dataCells[index].classList.contains("invalid")) {
+    return mistakes++;
   } else {
     dataCells[index].classList.add("invalid");
+    mistakes++;
+  }
+}
+
+function showModal() {
+  startStopTimer("stop");
+  result.textContent = mistakes
+    ? `You completed the puzzle with ${mistakes} mistakes!`
+    : `Woohoo Perfect Game!`;
+  totalTime.textContent = `You only took ${
+    minutes < 10 ? "0" + minutes : minutes
+  } minutes and ${
+    seconds < 10 ? "0" + seconds : seconds
+  } seconds to complete the puzzle!${
+    minutes < 10
+      ? minutes < 2
+        ? " WTF HOW, if the difficulty isn't easy"
+        : " You're a RockStar!"
+      : ""
+  }`;
+  totalErrors.textContent = `Total score = ${mistakes}/${81 - numberOfClues}${
+    mistakes === 0
+      ? " You're a genius...(or really luck)!"
+      : mistakes > 9
+      ? " Idiot, or unlucky you decide"
+      : ""
+  }`;
+  dataCells.forEach((el) => el.classList.remove("hover", "hold"));
+  modal.classList.remove("hide");
+  overlay.classList.remove("hide");
+}
+
+function startStopTimer(startOrStop) {
+  if (startOrStop === "start" && !timerRunning) {
+    timer.classList.remove("hide");
+    timerRunning = setInterval(() => {
+      seconds++;
+      if (seconds === 60) {
+        seconds = 0;
+        minutes++;
+      }
+      timer.textContent = `${minutes < 10 ? "0" + minutes : minutes}:${
+        seconds < 10 ? "0" + seconds : seconds
+      }`;
+    }, 1000);
+  } else if (startOrStop === "stop" && timerRunning) {
+    timer.classList.add("hide");
+    clearInterval(timerRunning);
   }
 }
 
@@ -123,7 +184,6 @@ function generateFullBoard() {
   function isSafe(index, num) {
     const row = getRow(index);
     const col = getCol(index);
-    const box = getBox(row, col);
 
     for (let i = 0; i < 9; i++) {
       const r = row * 9 + i;
@@ -169,8 +229,6 @@ function setCellValue() {
   return;
 }
 
-setCellValue();
-
 function fillCells(arr, difficulty) {
   const clueRange = {
     easy: [36, 49],
@@ -181,6 +239,7 @@ function fillCells(arr, difficulty) {
   const [min, max] = clueRange[difficulty];
 
   const clueCount = Math.floor(Math.random() * (max - min - 1)) + min;
+  numberOfClues = clueCount;
 
   const filled = [];
 
@@ -193,12 +252,51 @@ function fillCells(arr, difficulty) {
       filled.push(randomIndex);
       counter.textContent = Number(counter.textContent) - 1;
       if (Number(counter.textContent) === 0) {
-        selector.removeChild(`card-${value}`);
+        document.getElementById(`card-${value}`).style.display = "none";
       }
     } else {
       i--;
     }
   }
+  return;
+}
+
+function startGame(arr, difficulty) {
+  resetDifficulty = difficulty;
+  if (gameboard.classList.contains("hide")) {
+    main.classList.add("hide");
+    gameboard.classList.remove("hide");
+    selector.classList.remove("hide");
+  }
+  setCellValue();
+  startStopTimer("start");
+  fillCells(arr, difficulty);
+}
+
+function playAgain() {
+  modal.classList.add("hide");
+  overlay.classList.add("hide");
+  dataCells.forEach((el) => el.removeAttribute("data-set"));
+  const cards = [...selector.children];
+  cards.forEach((card) => (card.style.display = "block"));
+  [...document.querySelectorAll(".counter")].array.forEach((el) => {
+    el.textContent = 9;
+  });
+  startGame(dataCells, resetDifficulty);
+}
+
+function backToMenu() {
+  modal.classList.add("hide");
+  overlay.classList.add("hide");
+  gameboard.classList.add("hide");
+  selector.classList.add("hide");
+  main.classList.remove("hide");
+  const cards = [...selector.children];
+  cards.forEach((card) => (card.style.display = "block"));
+  dataCells.forEach((el) => {
+    el.textContent = "";
+    el.removeAttribute("data-set");
+  });
 }
 
 inputs.forEach((input, index) => {
@@ -220,25 +318,70 @@ inputs.forEach((input, index) => {
 });
 
 easy.addEventListener("click", () => {
-  main.classList.add("hide");
-  gameboard.classList.remove("hide");
-  fillCells(dataCells, "easy");
+  startGame(dataCells, "easy");
 });
 
 medium.addEventListener("click", () => {
-  main.classList.add("hide");
-  gameboard.classList.remove("hide");
-  fillCells(dataCells, "medium");
+  startGame(dataCells, "medium");
 });
 
 hard.addEventListener("click", () => {
-  main.classList.add("hide");
-  gameboard.classList.remove("hide");
-  fillCells(dataCells, "hard");
+  startGame(dataCells, "hard");
 });
 
 expert.addEventListener("click", () => {
-  main.classList.add("hide");
-  gameboard.classList.remove("hide");
-  fillCells(dataCells, "expert");
+  startGame(dataCells, "expert");
 });
+
+let isClicked = false;
+
+dataCells.forEach((div) => {
+  div.addEventListener("mouseover", () => {
+    const number = div.textContent;
+    const some = [...dataCells].some((el) => el.classList.contains("hold"));
+    if (!div.classList.contains("hover") && number !== "" && !some) {
+      dataCells.forEach((el) =>
+        el.textContent === number ? el.classList.add("hover") : null
+      );
+    } else {
+      return;
+    }
+  });
+  div.addEventListener("mouseout", () => {
+    const number = div.textContent;
+    if (number !== "") {
+      dataCells.forEach((el) =>
+        el.textContent === number ? el.classList.remove("hover") : null
+      );
+    } else {
+      return;
+    }
+  });
+
+  div.addEventListener("mousedown", () => {
+    const number = div.textContent;
+
+    if (!div.classList.contains("hold") && number !== "" && !isClicked) {
+      isClicked = !isClicked;
+      dataCells.forEach((el) =>
+        el.textContent === number ? el.classList.add("hold") : null
+      );
+    } else if (number !== "" && div.classList.contains("hold")) {
+      isClicked = !isClicked;
+      dataCells.forEach((el) =>
+        el.textContent === number ? el.classList.remove("hold") : null
+      );
+    } else if (isClicked && number !== "") {
+      dataCells.forEach((el) => {
+        el.classList.remove("hold");
+        el.textContent === number ? el.classList.add("hold") : null;
+      });
+    } else {
+      return;
+    }
+  });
+});
+
+playAgainBtn.addEventListener("click", playAgain);
+
+backToMenuBtn.addEventListener("click", backToMenu);

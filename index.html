@@ -10,16 +10,27 @@
   <body>
     <div class="main" id="main">
       <h1>Nik's Sudoku</h1>
-      <h2 class="small">Pick Your Difficulty:</h2>
+      <h2>Pick Your Difficulty:</h2>
       <button type="button" class="difficulty" id="easy">Easy</button>
       <button type="button" class="difficulty" id="medium">Medium</button>
       <button type="button" class="difficulty" id="hard">Hard</button>
       <button type="button" class="difficulty" id="expert">Expert</button>
     </div>
-    <!--Add a timer-->
+    <div class="hide" id="timer"></div>
     <div class="gameboard hide" id="gameboard"></div>
-    <div class="selector"></div>
-    <!--Add a modal to reset game-->
+    <div class="selector hide"></div>
+    <section class="modal hide" id="modal">
+      <span id="result">Result</span>
+      <span id="modal-time">Total time</span>
+      <span id="modal-errors"># of errors</span>
+      <button type="button" id="play-again" class="modal-btn">
+        Play again?
+      </button>
+      <button type="button" id="back-to-menu" class="modal-btn">
+        Back to menu
+      </button>
+    </section>
+    <div class="overlay hide"></div>
     <script src="./script.js"></script>
   </body>
 </html>
